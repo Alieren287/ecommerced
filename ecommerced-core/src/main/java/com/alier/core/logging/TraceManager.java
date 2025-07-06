@@ -92,7 +92,7 @@ public class TraceManager {
         if (correlationId != null) {
             logger.debug("Cleaning up trace context - CorrelationId: {}", correlationId);
         }
-        LoggerUtil.clearMDC();
+        LoggerUtil.clearContext();
     }
 
     /**
