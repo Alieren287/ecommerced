@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    
-    <!-- Properties for log patterns -->
-    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] [%X{moduleName:-}] [%X{moduleRequestId:-}] [%X{userId:-}] [%X{operation:-}] %logger{36} - %msg%n"/>
-    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] [%X{moduleName:-}] [%X{moduleRequestId:-}] [%X{userId:-}] [%X{operation:-}] [%X{correlationId:-}] %logger{36} - %msg%n"/>
-    
+
+    <!-- Properties for simplified log patterns -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}] [%X{userId:-}] [%X{operation:-}] %logger{36} - %msg%n"/>
+    <property name="FILE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}] [%X{userId:-}] [%X{operation:-}] [%X{correlationId:-}] %logger{36} - %msg%n"/>
+
     <!-- Console appender with enhanced MDC -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -45,7 +47,7 @@
         </encoder>
     </appender>
 
-    <!-- Structured JSON appender for microservices (requires logstash-logback-encoder dependency) -->
+    <!-- Structured JSON appender for microservices -->
     <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/ecommerced-core-json.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -55,7 +57,9 @@
             <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%-5level","thread":"%thread","logger":"%logger{36}","traceId":"%X{traceId:-}","moduleName":"%X{moduleName:-}","moduleRequestId":"%X{moduleRequestId:-}","userId":"%X{userId:-}","operation":"%X{operation:-}","correlationId":"%X{correlationId:-}","message":"%msg","exception":"%ex"}%n</pattern>
+            <pattern>{"timestamp":"%d{yyyy-MM-dd
+                HH:mm:ss.SSS}","level":"%-5level","thread":"%thread","logger":"%logger{36}","traceId":"%X{traceId:-}","moduleName":"%X{moduleName:-}","requestId":"%X{requestId:-}","userId":"%X{userId:-}","operation":"%X{operation:-}","correlationId":"%X{correlationId:-}","message":"%msg","exception":"%ex"}%n
+            </pattern>
         </encoder>
     </appender>
 
@@ -69,7 +73,9 @@
             <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [AUDIT] [%X{traceId:-}] [%X{moduleName:-}] [%X{userId:-}] [%X{operation:-}] - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [AUDIT] [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}]
+                [%X{userId:-}] [%X{operation:-}] - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
@@ -83,7 +89,9 @@
             <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [PERF] [%X{traceId:-}] [%X{moduleName:-}] [%X{operation:-}] - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [PERF] [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}]
+                [%X{operation:-}] - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
@@ -120,9 +128,9 @@
     <!-- Third-party loggers -->
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.hibernate" level="INFO"/>
-    
+
     <!-- Additional loggers can be added here as needed -->
-    
+
     <!-- 
     JSON structured logging can be enabled by commenting out the default appenders
     and uncommenting the JSON_FILE appender-ref below:
@@ -132,7 +140,7 @@
         <appender-ref ref="ERROR_FILE"/>
     </root>
     -->
-    
+
     <!-- 
     Production logging configuration (reduced verbosity):
     Change root level to WARN and com.alier level to INFO for production

@@ -8,8 +8,8 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Enhanced utility class for centralized logging functionality with trace ID,
- * module-based request ID, and structured logging support
+ * Simplified utility class for centralized logging functionality with trace ID,
+ * single request ID, and structured logging support
  */
 public class LoggerUtil {
 
@@ -17,7 +17,6 @@ public class LoggerUtil {
     private static final String TRACE_ID = "traceId";
     private static final String REQUEST_ID = "requestId";
     private static final String MODULE_NAME = "moduleName";
-    private static final String MODULE_REQUEST_ID = "moduleRequestId";
     private static final String USER_ID = "userId";
     private static final String OPERATION = "operation";
     private static final String CORRELATION_ID = "correlationId";
@@ -92,37 +91,35 @@ public class LoggerUtil {
     }
 
     /**
-     * Generates a module-based request ID
-     * Format: MODULE_YYYYMMDD_HHMMSS_RANDOM
+     * Generates a simple request ID
+     * Format: TIMESTAMP_RANDOM (e.g., 1704067200000_1234)
      *
-     * @param moduleName the module name
-     * @return the generated module request ID
+     * @return the generated request ID
      */
-    public static String generateModuleRequestId(String moduleName) {
+    public static String generateRequestId() {
         long timestamp = System.currentTimeMillis();
         int random = ThreadLocalRandom.current().nextInt(1000, 9999);
-        String moduleRequestId = String.format("%s_%d_%d", 
-            moduleName.toUpperCase(), timestamp, random);
-        MDC.put(MODULE_REQUEST_ID, moduleRequestId);
-        return moduleRequestId;
+        String requestId = String.format("%d_%d", timestamp, random);
+        MDC.put(REQUEST_ID, requestId);
+        return requestId;
     }
 
     /**
-     * Gets the module request ID from MDC
+     * Gets the request ID from MDC
      *
-     * @return the module request ID
+     * @return the request ID
      */
-    public static String getModuleRequestId() {
-        return MDC.get(MODULE_REQUEST_ID);
+    public static String getRequestId() {
+        return MDC.get(REQUEST_ID);
     }
 
     /**
-     * Sets the module request ID in MDC
+     * Sets the request ID in MDC
      *
-     * @param moduleRequestId the module request ID
+     * @param requestId the request ID
      */
-    public static void setModuleRequestId(String moduleRequestId) {
-        MDC.put(MODULE_REQUEST_ID, moduleRequestId);
+    public static void setRequestId(String requestId) {
+        MDC.put(REQUEST_ID, requestId);
     }
 
     /**
@@ -141,24 +138,6 @@ public class LoggerUtil {
      */
     public static void setModuleName(String moduleName) {
         MDC.put(MODULE_NAME, moduleName);
-    }
-
-    /**
-     * Gets the request ID from MDC
-     *
-     * @return the request ID
-     */
-    public static String getRequestId() {
-        return MDC.get(REQUEST_ID);
-    }
-
-    /**
-     * Sets the request ID in MDC for correlation
-     *
-     * @param requestId the request ID
-     */
-    public static void setRequestId(String requestId) {
-        MDC.put(REQUEST_ID, requestId);
     }
 
     /**
@@ -199,6 +178,7 @@ public class LoggerUtil {
 
     /**
      * Gets the correlation ID from MDC
+     * Used for cross-system request correlation
      *
      * @return the correlation ID
      */
@@ -207,7 +187,8 @@ public class LoggerUtil {
     }
 
     /**
-     * Sets the correlation ID in MDC
+     * Sets the correlation ID in MDC for cross-system tracking
+     * This ID should be passed between different services/systems
      *
      * @param correlationId the correlation ID
      */
@@ -216,34 +197,30 @@ public class LoggerUtil {
     }
 
     /**
-     * Initializes logging context for a new request
+     * Initializes complete logging context for a module operation
+     * This should be called at system entry points (controllers, message consumers, etc.)
      *
-     * @param moduleName the module name
-     * @param operation  the operation name
+     * @param moduleName the module name (e.g., "PRODUCT", "ORDER")
+     * @param operation  the operation being performed
      * @param userId     the user ID (optional)
      * @return the generated trace ID
      */
     public static String initializeLoggingContext(String moduleName, String operation, String userId) {
         String traceId = generateTraceId();
-        String moduleRequestId = generateModuleRequestId(moduleName);
-        
+        generateRequestId();
         setModuleName(moduleName);
         setOperation(operation);
-        setRequestId(moduleRequestId);
-        setModuleRequestId(moduleRequestId);
-        
         if (userId != null) {
             setUserId(userId);
         }
-        
         return traceId;
     }
 
     /**
-     * Initializes logging context for a new request without user ID
+     * Initializes logging context without user information
      *
      * @param moduleName the module name
-     * @param operation  the operation name
+     * @param operation  the operation being performed
      * @return the generated trace ID
      */
     public static String initializeLoggingContext(String moduleName, String operation) {
@@ -251,16 +228,19 @@ public class LoggerUtil {
     }
 
     /**
-     * Clears all MDC values
+     * Clears all MDC context
+     * Should be called at the end of request processing
      */
     public static void clearMDC() {
         MDC.clear();
     }
 
+    // Convenience methods for structured logging
+
     /**
      * Logs method entry with parameters
      *
-     * @param logger     the logger instance
+     * @param logger     the logger to use
      * @param methodName the method name
      * @param parameters the method parameters
      */
@@ -273,7 +253,7 @@ public class LoggerUtil {
     /**
      * Logs method exit with result
      *
-     * @param logger     the logger instance
+     * @param logger     the logger to use
      * @param methodName the method name
      * @param result     the method result
      */
@@ -286,7 +266,7 @@ public class LoggerUtil {
     /**
      * Logs method exit without result
      *
-     * @param logger     the logger instance
+     * @param logger     the logger to use
      * @param methodName the method name
      */
     public static void logMethodExit(Logger logger, String methodName) {
@@ -298,33 +278,33 @@ public class LoggerUtil {
     /**
      * Logs operation start
      *
-     * @param logger the logger instance
+     * @param logger    the logger to use
      * @param operation the operation name
-     * @param details operation details
+     * @param details   additional details
      */
     public static void logOperationStart(Logger logger, String operation, String details) {
         logger.info("Starting operation: {} - {}", operation, details);
     }
 
     /**
-     * Logs operation completion
+     * Logs operation completion with duration
      *
-     * @param logger the logger instance
+     * @param logger    the logger to use
      * @param operation the operation name
-     * @param duration duration in milliseconds
+     * @param duration  the operation duration in milliseconds
      */
     public static void logOperationComplete(Logger logger, String operation, long duration) {
-        logger.info("Completed operation: {} in {} ms", operation, duration);
+        logger.info("Completed operation: {} in {}ms", operation, duration);
     }
 
     /**
      * Logs operation failure
      *
-     * @param logger the logger instance
+     * @param logger    the logger to use
      * @param operation the operation name
-     * @param error the error
+     * @param error     the error that occurred
      */
     public static void logOperationFailure(Logger logger, String operation, Throwable error) {
-        logger.error("Operation failed: {} - {}", operation, error.getMessage(), error);
+        logger.error("Failed operation: {} - {}", operation, error.getMessage(), error);
     }
 } 
