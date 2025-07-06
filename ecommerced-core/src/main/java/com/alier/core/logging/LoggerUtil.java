@@ -8,18 +8,17 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Simplified utility class for centralized logging functionality with trace ID,
+ * Simplified utility class for centralized logging functionality with correlation ID,
  * single request ID, and structured logging support
  */
 public class LoggerUtil {
 
     // MDC Keys
-    private static final String TRACE_ID = "traceId";
+    private static final String CORRELATION_ID = "correlationId";
     private static final String REQUEST_ID = "requestId";
     private static final String MODULE_NAME = "moduleName";
     private static final String USER_ID = "userId";
     private static final String OPERATION = "operation";
-    private static final String CORRELATION_ID = "correlationId";
 
     /**
      * Gets a logger for the specified class
@@ -61,33 +60,35 @@ public class LoggerUtil {
     }
 
     /**
-     * Generates a new trace ID and sets it in MDC
+     * Generates a new correlation ID and sets it in MDC
+     * This ID will be used for both internal multi-module tracking and external cross-system tracking
      * Call this at the beginning of each request/operation
      *
-     * @return the generated trace ID
+     * @return the generated correlation ID
      */
-    public static String generateTraceId() {
-        String traceId = UUID.randomUUID().toString().replace("-", "");
-        MDC.put(TRACE_ID, traceId);
-        return traceId;
+    public static String generateCorrelationId() {
+        String correlationId = UUID.randomUUID().toString().replace("-", "");
+        MDC.put(CORRELATION_ID, correlationId);
+        return correlationId;
     }
 
     /**
-     * Gets the current trace ID from MDC
+     * Gets the current correlation ID from MDC
      *
-     * @return the trace ID
+     * @return the correlation ID
      */
-    public static String getTraceId() {
-        return MDC.get(TRACE_ID);
+    public static String getCorrelationId() {
+        return MDC.get(CORRELATION_ID);
     }
 
     /**
-     * Sets the trace ID in MDC
+     * Sets the correlation ID in MDC
+     * Use this when receiving a request from another service/system
      *
-     * @param traceId the trace ID
+     * @param correlationId the correlation ID
      */
-    public static void setTraceId(String traceId) {
-        MDC.put(TRACE_ID, traceId);
+    public static void setCorrelationId(String correlationId) {
+        MDC.put(CORRELATION_ID, correlationId);
     }
 
     /**
@@ -177,59 +178,38 @@ public class LoggerUtil {
     }
 
     /**
-     * Gets the correlation ID from MDC
-     * Used for cross-system request correlation
-     *
-     * @return the correlation ID
-     */
-    public static String getCorrelationId() {
-        return MDC.get(CORRELATION_ID);
-    }
-
-    /**
-     * Sets the correlation ID in MDC for cross-system tracking
-     * This ID should be passed between different services/systems
-     *
-     * @param correlationId the correlation ID
-     */
-    public static void setCorrelationId(String correlationId) {
-        MDC.put(CORRELATION_ID, correlationId);
-    }
-
-    /**
      * Initializes complete logging context for a module operation
-     * This should be called at system entry points (controllers, message consumers, etc.)
+     * Creates new correlation ID and request ID
      *
      * @param moduleName the module name (e.g., "PRODUCT", "ORDER")
      * @param operation  the operation being performed
      * @param userId     the user ID (optional)
-     * @return the generated trace ID
+     * @return the generated correlation ID
      */
     public static String initializeLoggingContext(String moduleName, String operation, String userId) {
-        String traceId = generateTraceId();
+        String correlationId = generateCorrelationId();
         generateRequestId();
         setModuleName(moduleName);
         setOperation(operation);
         if (userId != null) {
             setUserId(userId);
         }
-        return traceId;
+        return correlationId;
     }
 
     /**
-     * Initializes logging context without user information
+     * Initializes complete logging context for a module operation without user ID
      *
      * @param moduleName the module name
      * @param operation  the operation being performed
-     * @return the generated trace ID
+     * @return the generated correlation ID
      */
     public static String initializeLoggingContext(String moduleName, String operation) {
         return initializeLoggingContext(moduleName, operation, null);
     }
 
     /**
-     * Clears all MDC context
-     * Should be called at the end of request processing
+     * Clears all MDC values
      */
     public static void clearMDC() {
         MDC.clear();
@@ -246,7 +226,16 @@ public class LoggerUtil {
      */
     public static void logMethodEntry(Logger logger, String methodName, Object... parameters) {
         if (logger.isDebugEnabled()) {
-            logger.debug("Entering method: {} with parameters: {}", methodName, parameters);
+            StringBuilder sb = new StringBuilder();
+            sb.append("Entering method: ").append(methodName);
+            if (parameters != null && parameters.length > 0) {
+                sb.append(" with parameters: ");
+                for (int i = 0; i < parameters.length; i++) {
+                    sb.append(parameters[i]);
+                    if (i < parameters.length - 1) sb.append(", ");
+                }
+            }
+            logger.debug(sb.toString());
         }
     }
 

@@ -3,9 +3,9 @@
 
     <!-- Properties for simplified log patterns -->
     <property name="CONSOLE_LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}] [%X{userId:-}] [%X{operation:-}] %logger{36} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] [%X{moduleName:-}] [%X{requestId:-}] [%X{userId:-}] [%X{operation:-}] %logger{36} - %msg%n"/>
     <property name="FILE_LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}] [%X{userId:-}] [%X{operation:-}] [%X{correlationId:-}] %logger{36} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] [%X{moduleName:-}] [%X{requestId:-}] [%X{userId:-}] [%X{operation:-}] %logger{36} - %msg%n"/>
 
     <!-- Console appender with enhanced MDC -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -14,136 +14,92 @@
         </encoder>
     </appender>
 
-    <!-- File appender with enhanced MDC -->
+    <!-- File appender with daily rolling -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/ecommerced-core.log</file>
+        <file>logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/ecommerced-core.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
+            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <!-- Error file appender with enhanced MDC -->
+    <!-- Error-only appender -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/ecommerced-core-error.log</file>
+        <file>logs/error.log</file>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/ecommerced-core-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
+            <fileNamePattern>logs/error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>90</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>${FILE_LOG_PATTERN}%ex</pattern>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <!-- Structured JSON appender for microservices -->
+    <!-- JSON appender for structured logging -->
     <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/ecommerced-core-json.log</file>
+        <file>logs/application.json</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/ecommerced-core-json.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
+            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.json</fileNamePattern>
             <maxHistory>30</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>{"timestamp":"%d{yyyy-MM-dd
-                HH:mm:ss.SSS}","level":"%-5level","thread":"%thread","logger":"%logger{36}","traceId":"%X{traceId:-}","moduleName":"%X{moduleName:-}","requestId":"%X{requestId:-}","userId":"%X{userId:-}","operation":"%X{operation:-}","correlationId":"%X{correlationId:-}","message":"%msg","exception":"%ex"}%n
+                HH:mm:ss.SSS}","level":"%-5level","thread":"%thread","logger":"%logger{36}","correlationId":"%X{correlationId:-}","moduleName":"%X{moduleName:-}","requestId":"%X{requestId:-}","userId":"%X{userId:-}","operation":"%X{operation:-}","message":"%msg","exception":"%ex"}%n
             </pattern>
         </encoder>
     </appender>
 
-    <!-- Audit log appender for important business events -->
+    <!-- Audit appender with longer retention -->
     <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/ecommerced-core-audit.log</file>
+        <file>logs/audit.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/ecommerced-core-audit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
+            <fileNamePattern>logs/audit.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>365</maxHistory>
-            <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [AUDIT] [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}]
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [AUDIT] [%X{correlationId:-}] [%X{moduleName:-}] [%X{requestId:-}]
                 [%X{userId:-}] [%X{operation:-}] - %msg%n
             </pattern>
         </encoder>
     </appender>
 
-    <!-- Performance log appender for monitoring -->
-    <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/ecommerced-core-performance.log</file>
+    <!-- Performance appender for metrics -->
+    <appender name="PERF_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/performance.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/ecommerced-core-performance.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
+            <fileNamePattern>logs/performance.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [PERF] [%X{traceId:-}] [%X{moduleName:-}] [%X{requestId:-}]
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [PERF] [%X{correlationId:-}] [%X{moduleName:-}] [%X{requestId:-}]
                 [%X{operation:-}] - %msg%n
             </pattern>
         </encoder>
     </appender>
+
+    <!-- Specialized loggers -->
+    <logger name="com.alier.audit" level="INFO" additivity="false">
+        <appender-ref ref="AUDIT_FILE"/>
+    </logger>
+
+    <logger name="com.alier.performance" level="INFO" additivity="false">
+        <appender-ref ref="PERF_FILE"/>
+    </logger>
 
     <!-- Root logger -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
         <appender-ref ref="ERROR_FILE"/>
-    </root>
-
-    <!-- Application specific loggers -->
-    <logger name="com.alier" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
-    </logger>
-
-    <!-- Audit logger for business events -->
-    <logger name="com.alier.audit" level="INFO" additivity="false">
-        <appender-ref ref="AUDIT_FILE"/>
-    </logger>
-
-    <!-- Performance logger for monitoring -->
-    <logger name="com.alier.performance" level="INFO" additivity="false">
-        <appender-ref ref="PERFORMANCE_FILE"/>
-    </logger>
-
-    <!-- Trace and debug logging -->
-    <logger name="com.alier.core.logging" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <!-- Third-party loggers -->
-    <logger name="org.springframework" level="INFO"/>
-    <logger name="org.hibernate" level="INFO"/>
-
-    <!-- Additional loggers can be added here as needed -->
-
-    <!-- 
-    JSON structured logging can be enabled by commenting out the default appenders
-    and uncommenting the JSON_FILE appender-ref below:
-    
-    <root level="INFO">
         <appender-ref ref="JSON_FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
     </root>
-    -->
-
-    <!-- 
-    Production logging configuration (reduced verbosity):
-    Change root level to WARN and com.alier level to INFO for production
-    -->
 
 </configuration> 
