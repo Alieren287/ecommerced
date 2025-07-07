@@ -1,5 +1,6 @@
 package com.alier.core.logging;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -368,6 +369,7 @@ public class LoggerUtil {
     /**
      * Context holder for async operations
      */
+    @Getter
     public static class LoggingContext {
         private final String correlationId;
         private final String requestId;
@@ -383,24 +385,5 @@ public class LoggerUtil {
             this.operation = operation;
         }
 
-        public String getCorrelationId() {
-            return correlationId;
-        }
-
-        public String getRequestId() {
-            return requestId;
-        }
-
-        public String getModuleName() {
-            return moduleName;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public String getOperation() {
-            return operation;
-        }
     }
 } 
