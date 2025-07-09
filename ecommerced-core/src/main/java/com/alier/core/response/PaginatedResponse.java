@@ -41,17 +41,6 @@ public class PaginatedResponse<T> extends BaseResponse<List<T>> {
         return new PaginatedResponse<>(true, "Success", data, pagination);
     }
 
-    // Static factory methods for error responses
-    public static <T> PaginatedResponse<T> errorPaginated(String message) {
-        return new PaginatedResponse<>(false, message, null, null);
-    }
-
-    public static <T> PaginatedResponse<T> errorPaginated(String message, List<ErrorDetail> errors) {
-        PaginatedResponse<T> response = new PaginatedResponse<>(false, message, null, null);
-        response.setErrors(errors);
-        return response;
-    }
-
     /**
      * Pagination metadata inner class
      */
