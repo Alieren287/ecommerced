@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>ecommerced-core</module>
+        <module>product-service</module>
     </modules>
 
     <properties>
