@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @Getter
 public class Product extends AggregateRoot {
 
+    private final List<ProductVariant> variants;
     private ProductName name;
     private ProductDescription description;
     private ProductSlug slug;
@@ -23,7 +24,6 @@ public class Product extends AggregateRoot {
     private Set<UUID> categoryIds;
     private Set<ProductTag> tags;
     private List<ProductImage> images;
-    private final List<ProductVariant> variants;
     private boolean active;
 
     // For creating new products
