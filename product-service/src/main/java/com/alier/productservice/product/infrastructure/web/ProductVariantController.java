@@ -40,7 +40,7 @@ public class ProductVariantController {
      */
     @PostMapping
     public ResponseEntity<?> createProductVariant(
-            @PathVariable String productId,
+            @PathVariable UUID productId,
             @Valid @RequestBody ProductVariantRequest request) {
         try {
             CreateProductVariantCommand command = new CreateProductVariantCommand(
@@ -70,7 +70,7 @@ public class ProductVariantController {
      * Gets all variants for a product.
      */
     @GetMapping
-    public ResponseEntity<?> getProductVariants(@PathVariable String productId) {
+    public ResponseEntity<?> getProductVariants(@PathVariable UUID productId) {
         try {
             GetProductVariantsQuery query = new GetProductVariantsQuery(UUID.fromString(productId));
             Result<List<ProductVariant>> result = getProductVariantsQueryHandler.handle(query);
@@ -96,7 +96,7 @@ public class ProductVariantController {
      */
     @GetMapping("/{variantId}")
     public ResponseEntity<?> getProductVariant(
-            @PathVariable String productId,
+            @PathVariable UUID productId,
             @PathVariable String variantId) {
         try {
             GetProductVariantQuery query = new GetProductVariantQuery(
@@ -123,7 +123,7 @@ public class ProductVariantController {
      */
     @PutMapping("/{variantId}")
     public ResponseEntity<?> updateProductVariant(
-            @PathVariable String productId,
+            @PathVariable UUID productId,
             @PathVariable String variantId,
             @Valid @RequestBody UpdateProductVariantRequest request) {
         try {
@@ -153,7 +153,7 @@ public class ProductVariantController {
      */
     @DeleteMapping("/{variantId}")
     public ResponseEntity<?> deleteProductVariant(
-            @PathVariable String productId,
+            @PathVariable UUID productId,
             @PathVariable String variantId) {
         try {
             DeleteProductVariantCommand command = new DeleteProductVariantCommand(

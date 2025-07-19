@@ -23,7 +23,7 @@ public abstract class BaseProductCommandHandler {
      * @param productId the product ID as string
      * @return Result containing the Product if found, or failure message if not found or error occurred
      */
-    protected Result<Product> findProductById(String productId) {
+    protected Result<Product> findProductById(UUID productId) {
         try {
             ProductId id = ProductId.of(productId);
 
@@ -40,16 +40,6 @@ public abstract class BaseProductCommandHandler {
         } catch (Exception e) {
             return Result.failure("Error processing product ID: " + e.getMessage());
         }
-    }
-
-    /**
-     * Finds a product by UUID with validation.
-     *
-     * @param productId the product ID as UUID
-     * @return Result containing the Product if found, or failure message if not found or error occurred
-     */
-    protected Result<Product> findProductById(UUID productId) {
-        return findProductById(productId.toString());
     }
 
     /**

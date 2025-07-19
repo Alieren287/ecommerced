@@ -5,6 +5,7 @@ import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.*;
+import com.alier.productservice.product.infrastructure.web.dto.ProductImageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,10 +42,11 @@ public class CreateProductCommandHandler implements CommandHandler<CreateProduct
             }
 
             // Add images if provided
-            if (command.images() != null) {
-                for (ProductImage image : command.images()) {
-                    product.addImage(image);
-                }
+            // Map image DTOs to domain objects
+            if (command.images() != null && !command.images().isEmpty()) {
+                command.images().stream()
+                        .map(ProductImageDto::mapToProductImage)
+                        .forEach(product::addImage);
             }
 
             // Save product

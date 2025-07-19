@@ -2,11 +2,13 @@ package com.alier.productservice.product.infrastructure.web.dto;
 
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter
 public class CreateProductResponse {
-    private final String productId;
+    private final UUID productId;
 
-    public CreateProductResponse(String productId) {
+    public CreateProductResponse(UUID productId) {
         this.productId = productId;
     }
 

@@ -42,14 +42,14 @@ public class ProductController {
                     request.getAttributes(),
                     request.getCategoryIds(),
                     request.getTags(),
-                    null // Images are not handled in this basic request
+                    request.getImages()
             );
 
             Result<UUID> result = createProductCommandHandler.handle(command);
 
             if (result.isSuccess()) {
                 return ResponseEntity.status(HttpStatus.CREATED)
-                        .body(new CreateProductResponse(result.getValue().toString()));
+                        .body(new CreateProductResponse(result.getValue()));
             } else {
                 return ResponseEntity.badRequest()
                         .body(new ErrorResponse(result.getError()));
@@ -64,7 +64,7 @@ public class ProductController {
      * Gets a product by ID.
      */
     @GetMapping("/{productId}")
-    public ResponseEntity<?> getProduct(@PathVariable String productId) {
+    public ResponseEntity<?> getProduct(@PathVariable UUID productId) {
         try {
             GetProductQuery query = new GetProductQuery(productId);
             Result<Optional<Product>> result = getProductQueryHandler.handle(query);

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -22,4 +23,5 @@ public class CreateProductRequest {
     private Map<String, String> attributes;
     private Set<UUID> categoryIds;
     private Set<String> tags;
+    private List<ProductImageDto> images;
 }
