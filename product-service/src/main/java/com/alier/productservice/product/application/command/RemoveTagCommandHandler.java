@@ -5,15 +5,16 @@ import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.ProductTag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-public class RemoveTagCommandHandler extends BaseProductCommandHandler implements CommandHandler<RemoveTagCommand, Void> {
+public class RemoveTagCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<RemoveTagCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public RemoveTagCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     @Transactional
