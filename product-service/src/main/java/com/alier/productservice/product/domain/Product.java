@@ -41,6 +41,7 @@ public class Product extends AggregateRoot {
         this.active = true;
 
         validate();
+        publishEvent(new ProductCreatedEvent(ProductId.of(getId()), this.name));
     }
 
     // For reconstructing from persistence
@@ -151,8 +152,10 @@ public class Product extends AggregateRoot {
         businessRequire(!hasVariantWithSkuExcluding(newSku, variantId),
                 "A variant with SKU " + newSku.getValue() + " already exists");
 
+        VariantSku oldSku = variant.getSku();
         variant.updateSku(newSku);
         markAsUpdated();
+        publishEvent(new ProductVariantSkuUpdatedEvent(ProductId.of(getId()), variantId, oldSku, newSku));
     }
 
     /**
@@ -165,8 +168,10 @@ public class Product extends AggregateRoot {
         ProductVariant variant = findVariantById(variantId);
         businessRequire(variant != null, "Variant not found: " + variantId.getValue());
 
+        Money oldPrice = variant.getPrice();
         variant.changePrice(newPrice);
         markAsUpdated();
+        publishEvent(new ProductVariantPriceChangedEvent(ProductId.of(getId()), variantId, oldPrice, newPrice));
     }
 
     /**
@@ -180,6 +185,7 @@ public class Product extends AggregateRoot {
 
         variant.activate();
         markAsUpdated();
+        publishEvent(new ProductVariantActivatedEvent(ProductId.of(getId()), variantId));
     }
 
     /**
@@ -193,6 +199,7 @@ public class Product extends AggregateRoot {
 
         variant.deactivate();
         markAsUpdated();
+        publishEvent(new ProductVariantDeactivatedEvent(ProductId.of(getId()), variantId));
     }
 
     /**
