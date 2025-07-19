@@ -24,7 +24,7 @@ public class AddProductTagCommandHandler extends BaseProductCommandHandler
     public Result<Void> handle(AddProductTagCommand command) {
         try {
             // Find product using base class method
-            var productResult = findProductById(command.productId());
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }

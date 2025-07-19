@@ -3,9 +3,9 @@ package com.alier.productservice.product.application.command;
 import com.alier.ecommerced.core.application.common.Result;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
-import com.alier.productservice.product.domain.valueobject.ProductId;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -23,23 +23,15 @@ public abstract class BaseProductCommandHandler {
      * @param productId the product ID as string
      * @return Result containing the Product if found, or failure message if not found or error occurred
      */
-    protected Result<Product> findProductById(UUID productId) {
-        try {
-            ProductId id = ProductId.of(productId);
-
-            // Find product
-            var productResult = productRepository.findByProductId(id);
-            if (productResult.isFailure()) {
-                return Result.failure("Failed to find product: " + productResult.getError());
-            }
-
-            var productOptional = productResult.getValue();
-            return productOptional.map(Result::success).orElseGet(
-                    () -> Result.failure("Product not found with ID: " + productId));
-
-        } catch (Exception e) {
-            return Result.failure("Error processing product ID: " + e.getMessage());
+    protected Result<Product> getProductById(UUID productId) {
+        Result<Optional<Product>> productResult = productRepository.findById(productId);
+        if (productResult.isFailure()) {
+            return Result.failure(productResult.getError());
         }
+        if (productResult.getValue().isEmpty()) {
+            return Result.failure("Product not found with ID:" + productId);
+        }
+        return Result.success(productResult.getValue().get());
     }
 
     /**
@@ -50,7 +42,10 @@ public abstract class BaseProductCommandHandler {
      * @return Result<Void> indicating success or failure
      */
     protected Result<Void> saveProductAsVoid(Product product) {
-        return productRepository.save(product)
-                .map(_ -> null); // Convert to Result<Void>
+        Result<Product> saveResult = productRepository.save(product);
+        if (saveResult.isFailure()) {
+            return Result.failure(saveResult.getError());
+        }
+        return Result.success();
     }
-} 
+}

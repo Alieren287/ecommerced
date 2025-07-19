@@ -24,7 +24,7 @@ public class DeleteProductVariantCommandHandler extends BaseProductCommandHandle
     public Result<Void> handle(DeleteProductVariantCommand command) {
         try {
             // Find the product using base class method
-            var productResult = findProductById(command.getProductId());
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
@@ -32,18 +32,13 @@ public class DeleteProductVariantCommandHandler extends BaseProductCommandHandle
             Product product = productResult.getValue();
 
             // Create value objects
-            ProductVariantId variantId = ProductVariantId.of(command.getVariantId());
+            ProductVariantId variantId = ProductVariantId.of(command.variantId());
 
             // Remove variant
             product.removeVariant(variantId);
 
             // Save product
-            Result<Product> saveResult = productRepository.save(product);
-            if (saveResult.isFailure()) {
-                return Result.failure(saveResult.getError());
-            }
-
-            return Result.success();
+            return saveProductAsVoid(product);
 
         } catch (Exception e) {
             return Result.failure("Failed to delete product variant: " + e.getMessage());

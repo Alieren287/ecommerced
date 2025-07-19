@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Handles removing images from products.
  */
 @Service
-@Transactional
 public class RemoveProductImageCommandHandler extends BaseProductCommandHandler
         implements CommandHandler<RemoveProductImageCommand, Void> {
 
@@ -20,33 +19,21 @@ public class RemoveProductImageCommandHandler extends BaseProductCommandHandler
     }
 
     @Override
+    @Transactional
     public Result<Void> handle(RemoveProductImageCommand command) {
         try {
             // Find product using base class method
-            var productResult = findProductById(command.productId());
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
 
             Product product = productResult.getValue();
+            product.removeImage(command.image().mapToProductImage());
 
-            // Find the image to remove
-            var imageToRemove = product.getImages().stream()
-                    .filter(img -> img.getUrl().equals(command.imageUrl()))
-                    .findFirst();
-
-            if (imageToRemove.isEmpty()) {
-                return Result.failure("Image not found with URL: " + command.imageUrl());
-            }
-
-            // Remove image
-            product.removeImage(imageToRemove.get());
-
-            // Save product using base class helper
             return saveProductAsVoid(product);
-
         } catch (Exception e) {
-            return Result.failure("Failed to remove image from product: " + e.getMessage());
+            return Result.failure("Failed to remove product image: " + e.getMessage());
         }
     }
-} 
+}

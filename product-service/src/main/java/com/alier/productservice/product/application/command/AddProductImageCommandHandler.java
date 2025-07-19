@@ -4,7 +4,6 @@ import com.alier.ecommerced.core.application.common.Result;
 import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
-import com.alier.productservice.product.domain.valueobject.ProductImage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,26 +20,21 @@ public class AddProductImageCommandHandler extends BaseProductCommandHandler
     }
 
     @Override
+    @Transactional
     public Result<Void> handle(AddProductImageCommand command) {
         try {
             // Find product using base class method
-            var productResult = findProductById(command.productId());
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
 
             Product product = productResult.getValue();
-            ProductImage image = ProductImage.of(command.url(), command.altText(),
-                    command.isPrimary(), command.displayOrder());
+            product.addImage(command.image().mapToProductImage());
 
-            // Add image
-            product.addImage(image);
-
-            // Save product using base class helper
             return saveProductAsVoid(product);
-
         } catch (Exception e) {
-            return Result.failure("Failed to add image to product: " + e.getMessage());
+            return Result.failure("Failed to add product image: " + e.getMessage());
         }
     }
-} 
+}

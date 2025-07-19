@@ -29,7 +29,7 @@ public class CreateProductVariantCommandHandler extends BaseProductCommandHandle
     public Result<Void> handle(CreateProductVariantCommand command) {
         try {
             // Find the product using base class method
-            var productResult = findProductById(command.getProductId());
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
@@ -37,21 +37,16 @@ public class CreateProductVariantCommandHandler extends BaseProductCommandHandle
             Product product = productResult.getValue();
 
             // Create value objects
-            VariantName name = VariantName.of(command.getName());
-            VariantSku sku = VariantSku.of(command.getSku());
-            VariantAttributes attributes = VariantAttributes.of(command.getAttributes());
-            Money price = new Money(command.getPrice(), Currency.getInstance(command.getCurrency()));
+            VariantName name = VariantName.of(command.name());
+            VariantSku sku = VariantSku.of(command.sku());
+            VariantAttributes attributes = VariantAttributes.of(command.attributes());
+            Money price = new Money(command.price(), Currency.getInstance(command.currency()));
 
             // Add variant to product
             product.addVariant(name, sku, attributes, price);
 
             // Save product
-            Result<Product> saveResult = productRepository.save(product);
-            if (saveResult.isFailure()) {
-                return Result.failure(saveResult.getError());
-            }
-
-            return Result.success();
+            return saveProductAsVoid(product);
 
         } catch (Exception e) {
             return Result.failure("Failed to create product variant: " + e.getMessage());

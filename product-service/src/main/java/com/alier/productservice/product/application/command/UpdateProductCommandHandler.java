@@ -5,12 +5,12 @@ import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.*;
+import com.alier.productservice.product.infrastructure.web.dto.ProductImageDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -19,17 +19,17 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class UpdateProductCommandHandler extends BaseProductCommandHandler
-        implements CommandHandler<UpdateProductCommand, UUID> {
+        implements CommandHandler<UpdateProductCommand, Void> {
 
     public UpdateProductCommandHandler(ProductRepository productRepository) {
         super(productRepository);
     }
 
     @Override
-    public Result<UUID> handle(UpdateProductCommand command) {
+    public Result<Void> handle(UpdateProductCommand command) {
         try {
-            // Find existing product using base class method
-            var productResult = findProductById(command.productId());
+            // Find product using base class method
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
@@ -61,7 +61,7 @@ public class UpdateProductCommandHandler extends BaseProductCommandHandler
             // Update images if provided
             if (command.images() != null) {
                 List<ProductImage> images = command.images().stream()
-                        .map(dto -> ProductImage.of(dto.url(), dto.altText(), dto.isPrimary(), dto.displayOrder()))
+                        .map(ProductImageDto::mapToProductImage)
                         .collect(Collectors.toList());
                 product.updateImages(images);
             }
@@ -76,11 +76,10 @@ public class UpdateProductCommandHandler extends BaseProductCommandHandler
             }
 
             // Save updated product
-            return productRepository.save(product)
-                    .map(savedProduct -> savedProduct.getId());
+            return saveProductAsVoid(product);
 
         } catch (Exception e) {
             return Result.failure("Failed to update product: " + e.getMessage());
         }
     }
-} 
+}

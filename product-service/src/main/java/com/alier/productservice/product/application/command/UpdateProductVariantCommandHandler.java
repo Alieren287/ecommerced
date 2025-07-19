@@ -26,7 +26,7 @@ public class UpdateProductVariantCommandHandler extends BaseProductCommandHandle
     public Result<Void> handle(UpdateProductVariantCommand command) {
         try {
             // Find the product using base class method
-            var productResult = findProductById(command.productId());
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
@@ -42,12 +42,7 @@ public class UpdateProductVariantCommandHandler extends BaseProductCommandHandle
             product.updateVariant(variantId, name, attributes);
 
             // Save product
-            Result<Product> saveResult = productRepository.save(product);
-            if (saveResult.isFailure()) {
-                return Result.failure(saveResult.getError());
-            }
-
-            return Result.success();
+            return saveProductAsVoid(product);
 
         } catch (Exception e) {
             return Result.failure("Failed to update product variant: " + e.getMessage());

@@ -6,7 +6,6 @@ import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.*;
 import com.alier.productservice.product.infrastructure.web.dto.ProductImageDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +15,12 @@ import java.util.UUID;
  * Command handler for creating products.
  */
 @Service
-@RequiredArgsConstructor
-public class CreateProductCommandHandler implements CommandHandler<CreateProductCommand, UUID> {
+public class CreateProductCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<CreateProductCommand, UUID> {
 
-    private final ProductRepository productRepository;
+    public CreateProductCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     @Transactional
