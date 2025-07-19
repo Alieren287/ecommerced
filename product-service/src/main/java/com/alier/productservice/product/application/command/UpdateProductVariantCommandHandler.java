@@ -4,46 +4,39 @@ import com.alier.ecommerced.core.application.common.Result;
 import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
-import com.alier.productservice.product.domain.valueobject.ProductId;
 import com.alier.productservice.product.domain.valueobject.ProductVariantId;
 import com.alier.productservice.product.domain.valueobject.VariantAttributes;
 import com.alier.productservice.product.domain.valueobject.VariantName;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 /**
  * Command handler for updating product variants.
  */
 @Service
-@RequiredArgsConstructor
-public class UpdateProductVariantCommandHandler implements CommandHandler<UpdateProductVariantCommand, Void> {
+public class UpdateProductVariantCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<UpdateProductVariantCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public UpdateProductVariantCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     @Transactional
     public Result<Void> handle(UpdateProductVariantCommand command) {
         try {
-            // Find the product
-            Result<Optional<Product>> productResult = productRepository.findByProductId(ProductId.of(command.getProductId()));
+            // Find the product using base class method
+            var productResult = findProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
 
-            Optional<Product> productOptional = productResult.getValue();
-            if (productOptional.isEmpty()) {
-                return Result.failure("Product not found with ID: " + command.getProductId());
-            }
-
-            Product product = productOptional.get();
+            Product product = productResult.getValue();
 
             // Create value objects
-            ProductVariantId variantId = ProductVariantId.of(command.getVariantId());
-            VariantName name = VariantName.of(command.getName());
-            VariantAttributes attributes = VariantAttributes.of(command.getAttributes());
+            ProductVariantId variantId = ProductVariantId.of(command.variantId());
+            VariantName name = VariantName.of(command.name());
+            VariantAttributes attributes = VariantAttributes.of(command.attributes());
 
             // Update variant
             product.updateVariant(variantId, name, attributes);

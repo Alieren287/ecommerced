@@ -5,42 +5,36 @@ import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.ecommerced.core.domain.shared.Money;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
-import com.alier.productservice.product.domain.valueobject.ProductId;
 import com.alier.productservice.product.domain.valueobject.VariantAttributes;
 import com.alier.productservice.product.domain.valueobject.VariantName;
 import com.alier.productservice.product.domain.valueobject.VariantSku;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Currency;
-import java.util.Optional;
 
 /**
  * Command handler for creating product variants.
  */
 @Service
-@RequiredArgsConstructor
-public class CreateProductVariantCommandHandler implements CommandHandler<CreateProductVariantCommand, Void> {
+public class CreateProductVariantCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<CreateProductVariantCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public CreateProductVariantCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     @Transactional
     public Result<Void> handle(CreateProductVariantCommand command) {
         try {
-            // Find the product
-            Result<Optional<Product>> productResult = productRepository.findByProductId(ProductId.of(command.getProductId()));
+            // Find the product using base class method
+            var productResult = findProductById(command.getProductId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
 
-            Optional<Product> productOptional = productResult.getValue();
-            if (productOptional.isEmpty()) {
-                return Result.failure("Product not found with ID: " + command.getProductId());
-            }
-
-            Product product = productOptional.get();
+            Product product = productResult.getValue();
 
             // Create value objects
             VariantName name = VariantName.of(command.getName());

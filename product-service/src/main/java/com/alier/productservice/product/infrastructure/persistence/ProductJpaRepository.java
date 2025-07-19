@@ -59,5 +59,5 @@ public interface ProductJpaRepository extends JpaRepository<ProductJpaEntity, UU
     /**
      * Checks if a product exists by its product ID.
      */
-    boolean existsByProductId(UUID productId);
+    boolean existsById(UUID productId);
 } 

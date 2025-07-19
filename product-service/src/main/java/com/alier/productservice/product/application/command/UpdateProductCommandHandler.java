@@ -5,7 +5,6 @@ import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.*;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,29 +17,24 @@ import java.util.stream.Collectors;
  * Handles the updating of existing products.
  */
 @Service
-@RequiredArgsConstructor
 @Transactional
-public class UpdateProductCommandHandler implements CommandHandler<UpdateProductCommand, UUID> {
+public class UpdateProductCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<UpdateProductCommand, UUID> {
 
-    private final ProductRepository productRepository;
+    public UpdateProductCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     public Result<UUID> handle(UpdateProductCommand command) {
         try {
-            // Find existing product
-            ProductId productId = ProductId.of(command.productId());
-            var productResult = productRepository.findByProductId(productId);
-
+            // Find existing product using base class method
+            var productResult = findProductById(command.productId());
             if (productResult.isFailure()) {
-                return Result.failure("Failed to find product: " + productResult.getError());
+                return Result.failure(productResult.getError());
             }
 
-            var productOptional = productResult.getValue();
-            if (productOptional.isEmpty()) {
-                return Result.failure("Product not found with ID: " + command.productId());
-            }
-
-            Product product = productOptional.get();
+            Product product = productResult.getValue();
 
             // Update basic info if provided
             if (command.name() != null && command.description() != null && command.slug() != null) {

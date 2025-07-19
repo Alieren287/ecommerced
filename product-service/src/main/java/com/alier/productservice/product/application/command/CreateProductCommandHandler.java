@@ -25,24 +25,24 @@ public class CreateProductCommandHandler implements CommandHandler<CreateProduct
     public Result<UUID> handle(CreateProductCommand command) {
         try {
             // Create value objects
-            ProductName name = ProductName.of(command.getName());
-            ProductDescription description = ProductDescription.of(command.getDescription());
-            ProductSlug slug = ProductSlug.of(command.getSlug());
-            ProductAttributes attributes = ProductAttributes.of(command.getAttributes());
+            ProductName name = ProductName.of(command.name());
+            ProductDescription description = ProductDescription.of(command.description());
+            ProductSlug slug = ProductSlug.of(command.slug());
+            ProductAttributes attributes = ProductAttributes.of(command.attributes());
 
             // Create product
-            Product product = new Product(name, description, slug, attributes, command.getCategoryIds());
+            Product product = new Product(name, description, slug, attributes, command.categoryIds());
 
             // Add tags if provided
-            if (command.getTags() != null) {
-                for (String tagValue : command.getTags()) {
+            if (command.tags() != null) {
+                for (String tagValue : command.tags()) {
                     product.addTag(ProductTag.of(tagValue));
                 }
             }
 
             // Add images if provided
-            if (command.getImages() != null) {
-                for (ProductImage image : command.getImages()) {
+            if (command.images() != null) {
+                for (ProductImage image : command.images()) {
                     product.addImage(image);
                 }
             }

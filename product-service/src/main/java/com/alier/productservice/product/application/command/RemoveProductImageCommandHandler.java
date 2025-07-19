@@ -4,8 +4,6 @@ import com.alier.ecommerced.core.application.common.Result;
 import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
-import com.alier.productservice.product.domain.valueobject.ProductId;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,29 +11,24 @@ import org.springframework.transaction.annotation.Transactional;
  * Handles removing images from products.
  */
 @Service
-@RequiredArgsConstructor
 @Transactional
-public class RemoveProductImageCommandHandler implements CommandHandler<RemoveProductImageCommand, Void> {
+public class RemoveProductImageCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<RemoveProductImageCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public RemoveProductImageCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     public Result<Void> handle(RemoveProductImageCommand command) {
         try {
-            ProductId productId = ProductId.of(command.productId());
-
-            // Find product
-            var productResult = productRepository.findByProductId(productId);
+            // Find product using base class method
+            var productResult = findProductById(command.productId());
             if (productResult.isFailure()) {
-                return Result.failure("Failed to find product: " + productResult.getError());
+                return Result.failure(productResult.getError());
             }
 
-            var productOptional = productResult.getValue();
-            if (productOptional.isEmpty()) {
-                return Result.failure("Product not found with ID: " + command.productId());
-            }
-
-            Product product = productOptional.get();
+            Product product = productResult.getValue();
 
             // Find the image to remove
             var imageToRemove = product.getImages().stream()
@@ -49,9 +42,8 @@ public class RemoveProductImageCommandHandler implements CommandHandler<RemovePr
             // Remove image
             product.removeImage(imageToRemove.get());
 
-            // Save product
-            return productRepository.save(product)
-                    .map(savedProduct -> null); // Convert to Result<Void>
+            // Save product using base class helper
+            return saveProductAsVoid(product);
 
         } catch (Exception e) {
             return Result.failure("Failed to remove image from product: " + e.getMessage());

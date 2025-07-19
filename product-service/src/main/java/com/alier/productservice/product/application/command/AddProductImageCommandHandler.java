@@ -4,9 +4,7 @@ import com.alier.ecommerced.core.application.common.Result;
 import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
-import com.alier.productservice.product.domain.valueobject.ProductId;
 import com.alier.productservice.product.domain.valueobject.ProductImage;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,38 +12,32 @@ import org.springframework.transaction.annotation.Transactional;
  * Handles adding images to products.
  */
 @Service
-@RequiredArgsConstructor
 @Transactional
-public class AddProductImageCommandHandler implements CommandHandler<AddProductImageCommand, Void> {
+public class AddProductImageCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<AddProductImageCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public AddProductImageCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     public Result<Void> handle(AddProductImageCommand command) {
         try {
-            ProductId productId = ProductId.of(command.productId());
-
-            // Find product
-            var productResult = productRepository.findByProductId(productId);
+            // Find product using base class method
+            var productResult = findProductById(command.productId());
             if (productResult.isFailure()) {
-                return Result.failure("Failed to find product: " + productResult.getError());
+                return Result.failure(productResult.getError());
             }
 
-            var productOptional = productResult.getValue();
-            if (productOptional.isEmpty()) {
-                return Result.failure("Product not found with ID: " + command.productId());
-            }
-
-            Product product = productOptional.get();
+            Product product = productResult.getValue();
             ProductImage image = ProductImage.of(command.url(), command.altText(),
                     command.isPrimary(), command.displayOrder());
 
             // Add image
             product.addImage(image);
 
-            // Save product
-            return productRepository.save(product)
-                    .map(savedProduct -> null); // Convert to Result<Void>
+            // Save product using base class helper
+            return saveProductAsVoid(product);
 
         } catch (Exception e) {
             return Result.failure("Failed to add image to product: " + e.getMessage());

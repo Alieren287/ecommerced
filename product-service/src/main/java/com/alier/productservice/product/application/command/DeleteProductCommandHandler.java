@@ -3,8 +3,6 @@ package com.alier.productservice.product.application.command;
 import com.alier.ecommerced.core.application.common.Result;
 import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
-import com.alier.productservice.product.domain.valueobject.ProductId;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,29 +10,24 @@ import org.springframework.transaction.annotation.Transactional;
  * Handles the deletion of products.
  */
 @Service
-@RequiredArgsConstructor
 @Transactional
-public class DeleteProductCommandHandler implements CommandHandler<DeleteProductCommand, Void> {
+public class DeleteProductCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<DeleteProductCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public DeleteProductCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     public Result<Void> handle(DeleteProductCommand command) {
         try {
-            ProductId productId = ProductId.of(command.productId());
-
-            // Check if product exists
-            var existsResult = productRepository.findByProductId(productId);
-            if (existsResult.isFailure()) {
-                return Result.failure("Failed to check product existence: " + existsResult.getError());
+            // Find product using base class method
+            var productResult = findProductById(command.productId());
+            if (productResult.isFailure()) {
+                return Result.failure(productResult.getError());
             }
 
-            if (existsResult.getValue().isEmpty()) {
-                return Result.failure("Product not found with ID: " + command.productId());
-            }
-
-            // Get the product's entity ID for deletion
-            var product = existsResult.getValue().get();
+            var product = productResult.getValue();
 
             // Delete the product
             return productRepository.deleteById(product.getId())
