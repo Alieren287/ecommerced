@@ -102,6 +102,17 @@ public class Product extends AggregateRoot {
         publishEvent(new ProductDeactivatedEvent(ProductId.of(getId())));
     }
 
+    /**
+     * Marks the product for deletion.
+     * This method publishes a ProductDeletedEvent to notify other bounded contexts.
+     */
+    public void delete() {
+        // Business rule: Can delete regardless of active status
+        // Other business rules like checking for active orders could be added here
+        markAsUpdated();
+        publishEvent(new ProductDeletedEvent(ProductId.of(getId()), this.name));
+    }
+
     // Variant Management
 
     /**
