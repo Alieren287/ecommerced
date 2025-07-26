@@ -1,0 +1,31 @@
+# Spring profile for running without Kafka
+# Usage: mvn spring-boot:run -Dspring-boot.run.profiles=no-kafka
+# Or: java -jar app.jar --spring.profiles.active=no-kafka
+
+# Disable Kafka auto-configuration
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+# Disable outbox relayer
+outbox:
+  relayer:
+    enabled: false
+
+logging:
+  level:
+    com.alier.productservice.product.infrastructure.outbox: WARN
+    org.springframework.kafka: OFF
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Override main config to disable Kafka completely
+---
+spring:
+  config:
+    activate:
+      on-profile: no-kafka
+  kafka:
+    # Disable all Kafka configuration
+    enabled: false 

@@ -27,12 +27,53 @@ spring:
       enabled: true
       path: /h2-console
 
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: product-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.alier.productservice.product.domain.event"
+
+  # Task Scheduling Configuration
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+# Outbox Pattern Configuration
+outbox:
+  relayer:
+    # Enable/disable the outbox relayer (set to false if Kafka is not available)
+    enabled: true
+    # Poll for pending events every 10 seconds
+    poll-interval-ms: 10000
+    # Process up to 50 events per batch
+    batch-size: 50
+    # Maximum retry attempts for failed events
+    max-retries: 3
+    # Wait 5 minutes before retrying failed events
+    retry-delay-minutes: 5
+    # Kafka topic for publishing events
+    kafka-topic: product-events
+    # Cleanup published events daily at 2 AM
+    cleanup-cron: "0 0 2 * * ?"
+
 logging:
   level:
     com.alier.product: DEBUG
+    com.alier.productservice.product.infrastructure.outbox: INFO
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.kafka: INFO
 
 management:
   endpoints:

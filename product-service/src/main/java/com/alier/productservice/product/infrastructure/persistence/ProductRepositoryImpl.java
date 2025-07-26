@@ -1,10 +1,12 @@
 package com.alier.productservice.product.infrastructure.persistence;
 
 import com.alier.ecommerced.core.application.common.Result;
+import com.alier.ecommerced.core.domain.common.DomainEvent;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.ProductId;
 import com.alier.productservice.product.domain.valueobject.ProductTag;
+import com.alier.productservice.product.infrastructure.outbox.OutboxEventWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +25,25 @@ import java.util.stream.Collectors;
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final ProductJpaRepository jpaRepository;
+    private final OutboxEventWriter outboxEventWriter;
 
     @Override
     public Result<Product> save(Product product) {
         try {
+            // Save product entity to database
             ProductJpaEntity entity = ProductJpaEntity.fromDomain(product);
             ProductJpaEntity saved = jpaRepository.save(entity);
+
+            // Handle domain events with outbox pattern
+            List<DomainEvent> domainEvents = product.getDomainEvents();
+            if (!domainEvents.isEmpty()) {
+                // Save domain events to outbox table within the same transaction
+                outboxEventWriter.saveEvents(domainEvents);
+
+                // Clear domain events from aggregate after successful persistence
+                product.clearDomainEvents();
+            }
+            
             return Result.success(saved.toDomain());
         } catch (Exception e) {
             return Result.failure("Failed to save product: " + e.getMessage());
