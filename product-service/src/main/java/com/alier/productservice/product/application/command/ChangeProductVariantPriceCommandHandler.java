@@ -6,33 +6,30 @@ import com.alier.ecommerced.core.domain.shared.Money;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.ProductVariantId;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Currency;
-import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
-public class ChangeProductVariantPriceCommandHandler implements CommandHandler<ChangeProductVariantPriceCommand, Void> {
+public class ChangeProductVariantPriceCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<ChangeProductVariantPriceCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public ChangeProductVariantPriceCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     @Transactional
     public Result<Void> handle(ChangeProductVariantPriceCommand command) {
         try {
-            Result<Optional<Product>> productResult = productRepository.findById(command.productId());
+            // Find product using base class method
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
 
-            if (productResult.getValue().isEmpty()) {
-                return Result.failure("Product not found");
-            }
-
-            Product product = productResult.getValue().get();
+            Product product = productResult.getValue();
             product.changeVariantPrice(ProductVariantId.of(command.variantId()), new Money(command.price(), Currency.getInstance(command.currency())));
 
             Result<Product> saveResult = productRepository.save(product);

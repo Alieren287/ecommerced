@@ -6,32 +6,29 @@ import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.ProductVariantId;
 import com.alier.productservice.product.domain.valueobject.VariantSku;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
-@RequiredArgsConstructor
-public class UpdateProductVariantSkuCommandHandler implements CommandHandler<UpdateProductVariantSkuCommand, Void> {
+public class UpdateProductVariantSkuCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<UpdateProductVariantSkuCommand, Void> {
 
-    private final ProductRepository productRepository;
+
+    public UpdateProductVariantSkuCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     @Transactional
     public Result<Void> handle(UpdateProductVariantSkuCommand command) {
         try {
-            Result<Optional<Product>> productResult = productRepository.findById(command.productId());
+            // Find product using base class method
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
 
-            if (productResult.getValue().isEmpty()) {
-                return Result.failure("Product not found");
-            }
-
-            Product product = productResult.getValue().get();
+            Product product = productResult.getValue();
             product.updateVariantSku(ProductVariantId.of(command.variantId()), VariantSku.of(command.sku()));
 
             Result<Product> saveResult = productRepository.save(product);

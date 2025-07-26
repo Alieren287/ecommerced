@@ -5,34 +5,31 @@ import com.alier.ecommerced.core.application.port.in.CommandHandler;
 import com.alier.productservice.product.application.port.out.ProductRepository;
 import com.alier.productservice.product.domain.Product;
 import com.alier.productservice.product.domain.valueobject.ProductTag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-public class UpdateTagsCommandHandler implements CommandHandler<UpdateTagsCommand, Void> {
+public class UpdateTagsCommandHandler extends BaseProductCommandHandler
+        implements CommandHandler<UpdateTagsCommand, Void> {
 
-    private final ProductRepository productRepository;
+    public UpdateTagsCommandHandler(ProductRepository productRepository) {
+        super(productRepository);
+    }
 
     @Override
     @Transactional
     public Result<Void> handle(UpdateTagsCommand command) {
         try {
-            Result<Optional<Product>> productResult = productRepository.findById(command.productId());
+            // Find product using base class method
+            var productResult = getProductById(command.productId());
             if (productResult.isFailure()) {
                 return Result.failure(productResult.getError());
             }
 
-            if (productResult.getValue().isEmpty()) {
-                return Result.failure("Product not found");
-            }
-
-            Product product = productResult.getValue().get();
+            Product product = productResult.getValue();
             Set<ProductTag> productTags = command.tags().stream()
                     .map(ProductTag::of)
                     .collect(Collectors.toSet());
