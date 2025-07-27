@@ -15,7 +15,7 @@ outbox:
 
 logging:
   level:
-    com.alier.productservice.product.infrastructure.outbox: WARN
+    com.devcart.productservice.product.infrastructure.outbox: WARN
     org.springframework.kafka: OFF
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

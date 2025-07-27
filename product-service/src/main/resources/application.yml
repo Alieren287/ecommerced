@@ -40,7 +40,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.alier.productservice.product.domain.event"
+        spring.json.trusted.packages: "com.devcart.productservice.product.domain.event"
 
   # Task Scheduling Configuration
   task:
@@ -68,8 +68,8 @@ outbox:
 
 logging:
   level:
-    com.alier.product: DEBUG
-    com.alier.productservice.product.infrastructure.outbox: INFO
+    com.devcart.product: DEBUG
+    com.devcart.productservice.product.infrastructure.outbox: INFO
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
